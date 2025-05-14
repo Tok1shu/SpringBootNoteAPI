@@ -18,6 +18,11 @@ public class NotesController {
         return noteService.getAll();
     }
 
+    @GetMapping("/note/{id}")
+    public Note find(@PathVariable Long id){
+        return noteService.find(id);
+    }
+
     @PostMapping("/note")
     public Note add(@RequestBody Note note){
         return noteService.add(note);

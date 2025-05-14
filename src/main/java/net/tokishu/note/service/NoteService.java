@@ -1,7 +1,9 @@
 package net.tokishu.note.service;
 
 import net.tokishu.note.model.Note;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,16 @@ public class NoteService {
     public List<Note> getAll(){
         return notes;
     }
+
+    public Note find(Long id) {
+        for (Note note : notes) {
+            if (note.getId().equals(id)) {
+                return note;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found");
+    }
+
 
     public Note add(Note note){
         note.setId(idGenerator.getAndIncrement());

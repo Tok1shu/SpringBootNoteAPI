@@ -27,7 +27,7 @@ public class NoteServiceTest {
     }
 
     @Test
-    void updateNote() {
+    void updateNote(){
         Note note = new Note(1L, "Old QQ", "Old test content");
         noteService.add(note);
 
@@ -39,10 +39,25 @@ public class NoteServiceTest {
     }
 
     @Test
-    void deleteNote() {
-        noteService.add(new Note(1L, "Bye bye :(", "content"));
+    void deleteNote(){
+        Note noteToDelete = new Note(1L, "Bye bye :(", "content");
+        noteService.add(noteToDelete);
         noteService.delete(1L);
 
         assertTrue(noteService.getAll().isEmpty());
+    }
+
+    @Test
+    void findNote(){
+
+        for (long i = 1; i <= 10; i++) {
+            Note note = new Note(i, "Note " + i, "Content for note №" + i);
+            noteService.add(note);
+        }
+
+        Note result = noteService.find(5L);
+
+        assertNotNull(result, "Note should be found");
+        assertEquals("Note 5", result.getName());
     }
 }
