@@ -15,7 +15,7 @@ I'm testing spring boot, and it might become my main framework for building APIs
 }
 ```
 
-### `PUT /note/{id}` - Update note
+### `PUT /api/note/{id}` - Update note
 ```
 {
     "name":"What should I buy?",
@@ -23,4 +23,4 @@ I'm testing spring boot, and it might become my main framework for building APIs
 }
 ```
 
-### `DELETE /note/{id}` - Delete note
+### `DELETE /api/note/{id}` - Delete note
