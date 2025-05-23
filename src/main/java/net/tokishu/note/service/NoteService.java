@@ -1,52 +1,52 @@
 package net.tokishu.note.service;
 
+import lombok.RequiredArgsConstructor;
+import net.tokishu.note.dto.NoteRequest;
 import net.tokishu.note.model.Note;
+import net.tokishu.note.repo.NoteRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@RequiredArgsConstructor
 public class NoteService {
-    private List<Note> notes = new ArrayList<>();
-    private AtomicLong idGenerator = new AtomicLong(1);
+
+    public final NoteRepository noteRepository;
 
     public List<Note> getAll(){
-        return notes;
+        return noteRepository.findAll();
     }
 
-    public Note find(Long id) {
-        for (Note note : notes) {
-            if (note.getId().equals(id)) {
-                return note;
-            }
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found");
+    public Note find(UUID uuid) {
+        return noteRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
     }
 
 
-    public Note add(Note note){
-        note.setId(idGenerator.getAndIncrement());
-        notes.add(note);
-        return note;
+    public Note add(NoteRequest data){
+        Note note = new Note();
+            note.setName(data.getName());
+            note.setText(data.getText());
+
+            return noteRepository.save(note);
     }
 
-    public Note update(Long id, Note updatedNote){
-        for (Note note : notes){
-            if (note.getId().equals(id)) {
-                note.setName(updatedNote.getName());
-                note.setText(updatedNote.getText());
-                return note;
-            }
-        }
-        throw new NoSuchElementException("Note not found");
+    public Note update(UUID uuid, NoteRequest data){
+        Note existing = noteRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
+            existing.setName(data.getName());
+            existing.setText(data.getText());
+
+        return noteRepository.save(existing);
     }
 
-    public void delete(Long id){
-        notes.removeIf(note -> note.getId().equals(id));
+    public void delete(UUID uuid){
+        Note existing = noteRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
+        noteRepository.deleteById(uuid);
     }
 }
