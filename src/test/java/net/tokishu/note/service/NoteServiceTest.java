@@ -1,6 +1,6 @@
 package net.tokishu.note.service;
 
-import net.tokishu.note.dto.NoteRequest;
+import net.tokishu.note.dto.request.NoteRequest;
 import net.tokishu.note.model.Note;
 import net.tokishu.note.repo.NoteRepository;
 import org.junit.jupiter.api.BeforeEach;
