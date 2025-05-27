@@ -1,7 +1,7 @@
 package net.tokishu.note.service;
 
 import lombok.RequiredArgsConstructor;
-import net.tokishu.note.dto.NoteRequest;
+import net.tokishu.note.dto.request.NoteRequest;
 import net.tokishu.note.model.Note;
 import net.tokishu.note.repo.NoteRepository;
 import org.springframework.http.HttpStatus;
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
