@@ -6,9 +6,10 @@ import net.tokishu.note.dto.response.NoteResponse;
 import net.tokishu.note.model.Note;
 import net.tokishu.note.model.User;
 import net.tokishu.note.repo.NoteRepository;
-import net.tokishu.note.repo.UserRepository;
+import net.tokishu.note.util.CodeGenerator;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
@@ -20,7 +21,6 @@ public class NoteService {
 
     public final NoteRepository noteRepository;
     public final UserService userService;
-    public final UserRepository userRepository;
 
     public List<NoteResponse> getAll() {
         User currentUser = userService.getCurrentUser();
@@ -37,16 +37,29 @@ public class NoteService {
                 .collect(Collectors.toList());
     }
 
-    public NoteResponse find(UUID uuid) {
-        Note note = noteRepository.findById(uuid)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
+    public NoteResponse findByIdOrPublicLink(String idOrCode) {
+        if (!StringUtils.hasText(idOrCode)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid identifier or public link");
+        }
 
-        User currentUser = userService.getCurrentUser();
-        checkOwnership(note, currentUser);
+        Note note;
+        if (isUuid(idOrCode)) {
+            UUID id = UUID.fromString(idOrCode);
+            note = noteRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
+
+            User currentUser = userService.getCurrentUser();
+            checkOwnership(note, currentUser);
+        } else {
+            note = noteRepository.findByPublicLinkAndIsPublicTrue(idOrCode)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
+        }
+
         return toResponse(note);
     }
 
-    public NoteResponse add(NoteRequest data){
+
+    public NoteResponse add(NoteRequest data) {
         User author = userService.getCurrentUser();
 
         Note note = new Note();
@@ -54,9 +67,25 @@ public class NoteService {
         note.setText(data.getText());
         note.setAuthor(author);
 
+        String code;
+
+        int attempts = 0;
+        do {
+            code = CodeGenerator.generateCode();
+            attempts++;
+            if (attempts > 10) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate unique public link");
+            }
+        } while (noteRepository.existsByPublicLink(code));
+
+        note.setPublicLink(code);
+
+        note.setIsPublic(Boolean.TRUE.equals(data.getIsPublic()));
+
         Note saved = noteRepository.save(note);
         return toResponse(saved);
     }
+
 
     public NoteResponse update(UUID uuid, NoteRequest data) {
         Note existing = noteRepository.findById(uuid)
@@ -67,6 +96,7 @@ public class NoteService {
 
         existing.setName(data.getName());
         existing.setText(data.getText());
+        existing.setIsPublic(Boolean.TRUE.equals(data.getIsPublic()));
 
         return toResponse(noteRepository.save(existing));
     }
@@ -81,7 +111,7 @@ public class NoteService {
     }
 
     private void checkOwnership(Note note, User user) {
-        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) { // TODO: use enum
             return;
         }
 
@@ -95,8 +125,19 @@ public class NoteService {
                 .uuid(note.getUuid())
                 .name(note.getName())
                 .text(note.getText())
+                .isPublic(note.getIsPublic())
+                .publicLink(note.getPublicLink())
                 .author(note.getAuthor().getUsername())
                 .createdAt(note.getCreatedAt())
                 .build();
+    }
+
+    private boolean isUuid(String input) {
+        try {
+            UUID.fromString(input);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

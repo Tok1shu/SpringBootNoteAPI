@@ -1,13 +1,12 @@
-package net.tokishu.note.security;
+package net.tokishu.note.util;
 
-import org.springframework.stereotype.Service;
+import lombok.experimental.UtilityClass;
 
 import java.security.SecureRandom;
 
-@Service
-public class PasswordService {
-
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+@UtilityClass
+public class PasswordGenerator {
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*!$%&@";
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public String generate(int length) {

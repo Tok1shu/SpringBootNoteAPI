@@ -12,6 +12,8 @@ public class NoteResponse {
     private UUID uuid;
     private String name;
     private String text;
+    private Boolean isPublic;
+    private String publicLink;
     private String author;
     private LocalDateTime createdAt;
 }

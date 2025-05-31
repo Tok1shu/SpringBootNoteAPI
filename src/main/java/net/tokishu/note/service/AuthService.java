@@ -9,7 +9,7 @@ import net.tokishu.note.dto.response.RootResponse;
 import net.tokishu.note.model.User;
 import net.tokishu.note.repo.UserRepository;
 import net.tokishu.note.security.JwtService;
-import net.tokishu.note.security.PasswordService;
+import net.tokishu.note.util.PasswordGenerator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,17 +20,15 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
 
     public final UserRepository userRepository;
-    public final UserService userService;
-    public final PasswordService passwordService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public RootResponse registerRoot() {
-        userRepository.findById("root").ifPresent(user -> {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Root user already exists");
-        });
+        if (userRepository.existsByRole("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Administrator already exists");
+        }
 
-        String rawPassword = passwordService.generate(16);
+        String rawPassword = PasswordGenerator.generate(16);
         String hashedPassword = passwordEncoder.encode(rawPassword);
 
         User rootUser = new User();
