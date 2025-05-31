@@ -1,4 +1,4 @@
-package net.tokishu.note.seсurity;
+package net.tokishu.note.security;
 
 import lombok.RequiredArgsConstructor;
 import net.tokishu.note.model.User;
