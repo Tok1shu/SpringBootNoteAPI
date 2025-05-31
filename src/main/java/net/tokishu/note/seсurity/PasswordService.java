@@ -1,4 +1,4 @@
-package net.tokishu.note.serurity;
+package net.tokishu.note.seсurity;
 
 import org.springframework.stereotype.Service;
 
