@@ -2,7 +2,7 @@ package net.tokishu.note.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import net.tokishu.note.dto.response.ApiErrorResponse;
+import net.tokishu.note.dto.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,7 +20,7 @@ public class SecurityExceptionHandler implements AuthenticationEntryPoint, Acces
     private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        ApiErrorResponse body = ApiErrorResponse.builder()
+        ApiResponse body = ApiResponse.builder()
                 .status(status)
                 .message(message)
                 .build();

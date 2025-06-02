@@ -26,7 +26,6 @@ import java.util.Map;
 public class AuthController {
 
     public final AuthService authService;
-    public final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request) {

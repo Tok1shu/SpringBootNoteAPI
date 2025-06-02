@@ -1,20 +1,17 @@
 package net.tokishu.note.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
-import net.tokishu.note.dto.response.ApiErrorResponse;
+import net.tokishu.note.dto.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleAll(Exception ex) {
+    public ResponseEntity<ApiResponse> handleAll(Exception ex) {
         if (ex instanceof MethodArgumentNotValidException validationEx) {
             return handleValidation(validationEx);
         }
@@ -49,7 +46,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .findFirst()
@@ -59,10 +56,10 @@ public class GlobalExceptionHandler {
     }
 
 
-    private ResponseEntity<ApiErrorResponse> buildErrorResponse(int status, String message) {
+    private ResponseEntity<ApiResponse> buildErrorResponse(int status, String message) {
         return ResponseEntity
                 .status(status)
-                .body(ApiErrorResponse.builder()
+                .body(ApiResponse.builder()
                         .status(status)
                         .message(message != null ? message : "Unexpected error")
                         .build());
