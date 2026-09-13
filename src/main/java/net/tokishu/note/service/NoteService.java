@@ -5,7 +5,9 @@ import net.tokishu.note.dto.request.NoteRequest;
 import net.tokishu.note.dto.response.NoteResponse;
 import net.tokishu.note.model.Note;
 import net.tokishu.note.model.User;
+import net.tokishu.note.model.UserRole;
 import net.tokishu.note.repo.NoteRepository;
+import net.tokishu.note.util.CheckAuthUtil;
 import net.tokishu.note.util.CodeGenerator;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,10 @@ public class NoteService {
     public final NoteRepository noteRepository;
     public final UserService userService;
 
-    public List<NoteResponse> getAll() {
-        User currentUser = userService.getCurrentUser();
+    public List<NoteResponse> getAll(User currentUser) {
         List<Note> notes;
 
-        if ("ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+        if (currentUser.getRole() == UserRole.ADMIN) {
             notes = noteRepository.findAll();
         } else {
             notes = noteRepository.findByAuthorUsername(currentUser.getUsername());
@@ -37,18 +38,17 @@ public class NoteService {
                 .collect(Collectors.toList());
     }
 
-    public NoteResponse findByIdOrPublicLink(String idOrCode) {
+    public NoteResponse findByIdOrPublicLink(String idOrCode, User currentUser) {
         if (!StringUtils.hasText(idOrCode)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid identifier or public link");
         }
 
         Note note;
         if (isUuid(idOrCode)) {
+            CheckAuthUtil.check(currentUser);
             UUID id = UUID.fromString(idOrCode);
             note = noteRepository.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
-
-            User currentUser = userService.getCurrentUser();
             checkOwnership(note, currentUser);
         } else {
             note = noteRepository.findByPublicLinkAndIsPublicTrue(idOrCode)
@@ -58,10 +58,7 @@ public class NoteService {
         return toResponse(note);
     }
 
-
-    public NoteResponse add(NoteRequest data) {
-        User author = userService.getCurrentUser();
-
+    public NoteResponse add(NoteRequest data, User author) {
         Note note = new Note();
         note.setName(data.getName());
         note.setText(data.getText());
@@ -86,12 +83,10 @@ public class NoteService {
         return toResponse(saved);
     }
 
-
-    public NoteResponse update(UUID uuid, NoteRequest data) {
+    public NoteResponse update(UUID uuid, NoteRequest data, User currentUser) {
         Note existing = noteRepository.findById(uuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
 
-        User currentUser = userService.getCurrentUser();
         checkOwnership(existing, currentUser);
 
         existing.setName(data.getName());
@@ -101,17 +96,16 @@ public class NoteService {
         return toResponse(noteRepository.save(existing));
     }
 
-    public void delete(UUID uuid) {
+    public void delete(UUID uuid, User currentUser) {
         Note existing = noteRepository.findById(uuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found"));
-
-        User currentUser = userService.getCurrentUser();
+        
         checkOwnership(existing, currentUser);
         noteRepository.delete(existing);
     }
 
     private void checkOwnership(Note note, User user) {
-        if ("ADMIN".equalsIgnoreCase(user.getRole())) { // TODO: use enum
+        if (user.getRole() == UserRole.ADMIN) {
             return;
         }
 
