@@ -12,3 +12,5 @@ learned spring boot and java core superfically
 
 i think it will be better to make tests "in the progress", eeeh, for example: new feature, some tests for that, one more feature...
 and so on.
+
+This is playground for me, so ill write and test all what intresting for me, here can be many overkill things.
