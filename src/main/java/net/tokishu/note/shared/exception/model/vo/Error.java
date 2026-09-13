@@ -11,10 +11,11 @@ public record Error(
 
     public Error {
         Objects.requireNonNull(value, "value must not be null");
+        validate(value);
     }
 
     private String validate(String value){
-        if (!value.toUpperCase().contains(ERROR_VALUE_FORMAT)) {
+        if (!value.matches(ERROR_VALUE_FORMAT)) {
             throw new InternalServerException(
                     "Domain error value is not valid: \""
                             +value+ "\" it must contains regex: \"" + ERROR_VALUE_FORMAT + "\"");
